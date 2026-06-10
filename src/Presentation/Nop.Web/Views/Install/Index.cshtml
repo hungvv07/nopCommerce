@@ -26,6 +26,31 @@
     <script src="@Url.Content("~/lib_npm/jquery-validation/jquery.validate.min.js")"></script>
     <script src="@Url.Content("~/lib_npm/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js")"></script>
     <script src="@Url.Content("~/js/public.common.js")"></script>
+
+    <script>
+        let timer = 0;
+        $(function () {
+            clearInterval(timer)
+
+            var postData = {};
+            addAntiForgeryToken(postData);
+
+            timer = setInterval(function() {
+                $.ajax({
+                    url: '@Url.Action("Progress", "Install")',
+                    async: true,
+                    data: postData,
+                    dataType: "json",
+                    type: "POST",
+                    cache: false,
+                    success: function (data, status) {
+                        if (data.IsActive)
+                            showThrobber(data.ProgressMessage);
+                    }
+                });
+            }, 1000);
+        });
+    </script>
 </head>
 <body>
     <div class="wrapper">

@@ -349,7 +349,9 @@ public partial class InstallController : Controller
             DataSettingsManager.SaveSettings(new DataConfig(), _fileProvider);
 
             ModelState.AddModelError(string.Empty, string.Format(_locService.Value.GetResource("SetupFailed"), exception.Message));
-
+        }
+        finally
+        {
             _installProgressInfoModel = null;
         }
 

@@ -111,14 +111,14 @@
   <LocaleResource Name="Progress.InitializeDatabase">
     <Value>Initializing database...</Value>
   </LocaleResource>
+  <LocaleResource Name="Progress.InsertData">
+    <Value>Inserting data...</Value>
+  </LocaleResource>
   <LocaleResource Name="Progress.PreparePlugins">
     <Value>Preparing plugins...</Value>
   </LocaleResource>
   <LocaleResource Name="Progress.RegionalResources">
     <Value>Applying regional setting...</Value>
-  </LocaleResource>
-  <LocaleResource Name="Progress.InsertData">
-    <Value>Inserting data...</Value>
   </LocaleResource>
   <LocaleResource Name="RawConnectionString">
     <Value>Enter raw connection string (advanced)</Value>

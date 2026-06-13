@@ -9,7 +9,16 @@
 #   - Database type: PostgreSQL
 #   - Raw connection string:
 #       Host=nopcommerce_database;Port=5432;Database=nopcommerce;Username=nop;Password=YOUR_PASSWORD;
+#   - TICK "Create database if it doesn't exist"  <-- REQUIRED (see note below)
 #   - Tick "Create sample data" for demo data.
+#
+# IMPORTANT: POSTGRES_DB is intentionally NOT set. nopCommerce only creates the
+# required PostgreSQL extensions (citext, pgcrypto) when it creates the database
+# itself. If Postgres pre-creates the "nopcommerce" database, nopCommerce skips
+# that step and the migration fails with: type "citext" does not exist.
+# So we let nopCommerce create the database (via the wizard checkbox above).
+# The postgres image will create a throwaway default DB named "nop" (= the user);
+# it is unused and harmless.
 #
 # Note: the named volumes below are auto-seeded by Docker from the image on first
 # creation, so the installer's bundled App_Data files are preserved while your
@@ -34,7 +43,8 @@ services:
         image: "postgres:16-alpine"
         restart: unless-stopped
         environment:
-            POSTGRES_DB: "nopcommerce"
+            # Do NOT set POSTGRES_DB. Let nopCommerce create the "nopcommerce"
+            # database so it also creates the citext/pgcrypto extensions.
             POSTGRES_USER: "nop"
             POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}   # set this in the Coolify UI
         volumes:

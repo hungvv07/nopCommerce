@@ -1,0 +1,47 @@
+# nopCommerce deployment for Coolify (PostgreSQL + persistent volumes)
+#
+# Deploy in Coolify as a "Docker Compose" resource pointing at this file.
+# Required setup in the Coolify UI:
+#   1. Set the env var POSTGRES_PASSWORD to a strong value.
+#   2. Assign a domain to the nopcommerce_web service (Coolify's proxy routes to the exposed port 80).
+#
+# On first run, open your domain -> you land on /install. Choose:
+#   - Database type: PostgreSQL
+#   - Raw connection string:
+#       Host=nopcommerce_database;Port=5432;Database=nopcommerce;Username=nop;Password=YOUR_PASSWORD;
+#   - Tick "Create sample data" for demo data.
+#
+# Note: the named volumes below are auto-seeded by Docker from the image on first
+# creation, so the installer's bundled App_Data files are preserved while your
+# install config + DataProtection keys persist across redeploys.
+
+services:
+    nopcommerce_web:
+        build: .
+        restart: unless-stopped
+        expose:
+            - "80"                     # Coolify's proxy routes here; do NOT publish to host
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Production
+        volumes:
+            - nop_app_data:/app/App_Data         # install config (appsettings.json) + DataProtection keys
+            - nop_images:/app/wwwroot/images     # uploaded product images
+            - nop_plugins:/app/Plugins           # installed plugins
+        depends_on:
+            - nopcommerce_database
+
+    nopcommerce_database:
+        image: "postgres:16-alpine"
+        restart: unless-stopped
+        environment:
+            POSTGRES_DB: "nopcommerce"
+            POSTGRES_USER: "nop"
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}   # set this in the Coolify UI
+        volumes:
+            - nop_pgdata:/var/lib/postgresql/data
+
+volumes:
+    nop_app_data:
+    nop_images:
+    nop_plugins:
+    nop_pgdata:

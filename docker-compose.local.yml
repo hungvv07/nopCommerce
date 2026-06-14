@@ -1,0 +1,136 @@
+# nopCommerce local Docker deployment (PostgreSQL + automated install)
+#
+# Bring it up:
+#   docker compose -f docker-compose.local.yml up -d --build
+#
+# Then open http://localhost:8080
+#   Admin login:  admin@yourstore.com / Admin_Pw123
+#
+# The nopcommerce_installer sidecar runs once, waits for the web app, and
+# performs a headless install (PostgreSQL + sample data). It is idempotent:
+# on later `up` runs it sees the store is already installed and exits.
+#
+# Tear down (keep data):     docker compose -f docker-compose.local.yml down
+# Tear down (wipe data):     docker compose -f docker-compose.local.yml down -v
+
+services:
+    nopcommerce_web:
+        build: .
+        container_name: nopcommerce_web
+        restart: unless-stopped
+        ports:
+            - "8080:80"                  # http://localhost:8080
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Production
+        volumes:
+            - nop_app_data:/app/App_Data         # install config + DataProtection keys
+            - nop_images:/app/wwwroot/images     # uploaded product images
+            # NOTE: do NOT mount a named volume over /app/Plugins here.
+            # Plugins are compiled into the image from src/Plugins at build time.
+            # A named volume is seeded from the image only on first creation, so it
+            # would shadow /app/Plugins and hide any plugin added in later rebuilds.
+            # Leaving plugins to come from the image means every rebuild is reflected.
+            # - nop_plugins:/app/Plugins
+        depends_on:
+            - nopcommerce_database
+
+    nopcommerce_database:
+        image: "postgres:16-alpine"
+        container_name: nopcommerce_db
+        restart: unless-stopped
+        environment:
+            # Do NOT set POSTGRES_DB. Let nopCommerce create the "nopcommerce"
+            # database so it also creates the citext/pgcrypto extensions.
+            POSTGRES_USER: "nop"
+            POSTGRES_PASSWORD: "nopCommerce_db_password"
+        volumes:
+            - nop_pgdata:/var/lib/postgresql/data
+
+    # One-shot automated installer.
+    nopcommerce_installer:
+        image: "curlimages/curl:8.10.1"
+        restart: "no"
+        depends_on:
+            - nopcommerce_web
+        environment:
+            NOP_AUTO_INSTALL: "true"
+            NOP_URL: "http://nopcommerce_web:80"
+            NOP_ADMIN_EMAIL: "admin@yourstore.com"
+            NOP_ADMIN_PASSWORD: "Admin_Pw123"
+            NOP_SAMPLE_DATA: "true"
+            NOP_CONNECTION_STRING: "Host=nopcommerce_database;Port=5432;Database=nopcommerce;Username=nop;Password=nopCommerce_db_password;"
+        entrypoint: ["/bin/sh", "-c"]
+        command:
+            - |
+                set -eu
+
+                if [ "$${NOP_AUTO_INSTALL:-false}" != "true" ]; then
+                    echo "[installer] NOP_AUTO_INSTALL != true -> skipping automated install."
+                    exit 0
+                fi
+                if [ -z "$${NOP_ADMIN_PASSWORD:-}" ]; then
+                    echo "[installer] ERROR: NOP_ADMIN_PASSWORD is required when NOP_AUTO_INSTALL=true." >&2
+                    exit 1
+                fi
+
+                BASE="$${NOP_URL:-http://nopcommerce_web:80}"
+                BASE="$${BASE%/}"
+                JAR="$$(mktemp)"
+                RESP="$$(mktemp)"
+
+                echo "[installer] Waiting for web app at $${BASE} ..."
+                i=0
+                until curl -s -o /dev/null "$${BASE}/install"; do
+                    i=$$((i + 1))
+                    if [ "$$i" -gt 120 ]; then
+                        echo "[installer] ERROR: web app did not respond in time." >&2
+                        exit 1
+                    fi
+                    sleep 3
+                done
+
+                CODE="$$(curl -s -o /dev/null -w '%{http_code}' "$${BASE}/install")"
+                if [ "$$CODE" != "200" ]; then
+                    echo "[installer] /install returned HTTP $${CODE} -> already installed. Nothing to do."
+                    exit 0
+                fi
+
+                echo "[installer] Fetching antiforgery token ..."
+                HTML="$$(curl -s -c "$${JAR}" "$${BASE}/install")"
+                TOKEN="$$(printf '%s' "$$HTML" | tr '>' '\n' \
+                    | grep '__RequestVerificationToken' \
+                    | sed -n 's/.*value="\([^"]*\)".*/\1/p' | head -n1)"
+                if [ -z "$${TOKEN}" ]; then
+                    echo "[installer] ERROR: could not extract antiforgery token." >&2
+                    exit 1
+                fi
+
+                echo "[installer] Submitting installation (sample data=$${NOP_SAMPLE_DATA:-true}) ..."
+                STATUS="$$(curl -s -b "$${JAR}" -c "$${JAR}" -o "$${RESP}" -w '%{http_code}' -m 1800 \
+                    --data-urlencode "__RequestVerificationToken=$${TOKEN}" \
+                    --data-urlencode "AdminEmail=$${NOP_ADMIN_EMAIL:-admin@yourstore.com}" \
+                    --data-urlencode "AdminPassword=$${NOP_ADMIN_PASSWORD}" \
+                    --data-urlencode "ConfirmPassword=$${NOP_ADMIN_PASSWORD}" \
+                    --data-urlencode "DataProvider=PostgreSQL" \
+                    --data-urlencode "ConnectionStringRaw=true" \
+                    --data-urlencode "ConnectionString=$${NOP_CONNECTION_STRING}" \
+                    --data-urlencode "CreateDatabaseIfNotExists=true" \
+                    --data-urlencode "InstallSampleData=$${NOP_SAMPLE_DATA:-true}" \
+                    --data-urlencode "SubscribeNewsletters=false" \
+                    "$${BASE}/install")"
+
+                if grep -q "window.location.replace" "$${RESP}"; then
+                    echo "[installer] Installation succeeded. Restarting app ..."
+                    curl -s -o /dev/null -m 30 "$${BASE}/install/restartapplication" || true
+                    echo "[installer] Done."
+                    exit 0
+                fi
+
+                echo "[installer] ERROR: installation failed (HTTP $${STATUS}). Response excerpt:" >&2
+                sed -n '1,60p' "$${RESP}" >&2
+                exit 1
+
+volumes:
+    nop_app_data:
+    nop_images:
+    nop_pgdata:

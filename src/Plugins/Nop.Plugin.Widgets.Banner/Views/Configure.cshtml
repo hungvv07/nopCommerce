@@ -1,0 +1,64 @@
+@model Nop.Plugin.Widgets.Banner.Models.ConfigurationModel
+@{
+    Layout = "_ConfigurePlugin";
+}
+
+<div class="content">
+    <div class="form-horizontal">
+        <div class="cards-group">
+            <div class="card card-default">
+                <div class="card-body">
+                    @await Html.PartialAsync("Table", new DataTablesModel
+                    {
+                        Name = "banners-grid",
+                        UrlRead = new DataUrl("List", "WidgetsBanner", null),
+                        Length = Model.BannerSearchModel.PageSize,
+                        LengthMenu = Model.BannerSearchModel.AvailablePageSizes,
+                        ColumnCollection = new List<ColumnProperty>
+                        {
+                            new ColumnProperty(nameof(BannerModel.PictureUrl))
+                            {
+                                Title = T("Plugins.Widgets.Banner.Fields.PictureId").Text,
+                                Width = "150",
+                                Render = new RenderCustom("renderBannerPicture")
+                            },
+                            new ColumnProperty(nameof(BannerModel.WidgetZone))
+                            {
+                                Title = T("Plugins.Widgets.Banner.Fields.WidgetZone").Text
+                            },
+                            new ColumnProperty(nameof(BannerModel.DisplayOrder))
+                            {
+                                Title = T("Plugins.Widgets.Banner.Fields.DisplayOrder").Text,
+                                Width = "120",
+                                ClassName = NopColumnClassDefaults.CenterAll
+                            },
+                            new ColumnProperty(nameof(BannerModel.LinkUrl))
+                            {
+                                Title = T("Plugins.Widgets.Banner.Fields.LinkUrl").Text
+                            },
+                            new ColumnProperty(nameof(BannerModel.Id))
+                            {
+                                Title = T("Admin.Common.Edit").Text,
+                                Width = "100",
+                                Render = new RenderButtonEdit(new DataUrl("~/Admin/WidgetsBanner/Edit/"))
+                            }
+                        }
+                    })
+
+                    <script>
+                        function renderBannerPicture(data, type, row, meta) {
+                            if (!row.PictureUrl) return '';
+                            return '<a href="' + row.PictureUrl + '" target="_blank"><img alt="' + (row.AltText || '') + '" src="' + row.PictureUrl + '" style="max-width:120px" /></a>';
+                        }
+                    </script>
+                </div>
+                <div class="card-footer">
+                    <a asp-controller="WidgetsBanner" asp-action="Create" class="btn btn-primary">
+                        <i class="fas fa-square-plus"></i>
+                        @T("Plugins.Widgets.Banner.AddNew")
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

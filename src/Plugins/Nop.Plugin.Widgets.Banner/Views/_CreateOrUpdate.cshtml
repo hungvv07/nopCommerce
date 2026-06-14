@@ -1,0 +1,78 @@
+@model BannerModel
+
+<div asp-validation-summary="All"></div>
+
+<div class="content">
+    <div class="form-horizontal">
+        <div class="cards-group">
+            <div class="card card-default">
+                <div class="card-body">
+                    <input asp-for="Id" type="hidden" />
+                    <div class="form-group row">
+                        <div class="col-md-3">
+                            <nop-label asp-for="PictureId" />
+                        </div>
+                        <div class="col-md-9">
+                            <nop-editor asp-for="PictureId" />
+                            <span asp-validation-for="PictureId"></span>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-md-3">
+                            <nop-label asp-for="WidgetZone" />
+                        </div>
+                        <div class="col-md-9">
+                            <nop-select asp-for="WidgetZone" asp-items="Model.AvailableWidgetZones" />
+                            <span asp-validation-for="WidgetZone"></span>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-md-3">
+                            <nop-label asp-for="DisplayOrder" />
+                        </div>
+                        <div class="col-md-9">
+                            <nop-editor asp-for="DisplayOrder" />
+                            <span asp-validation-for="DisplayOrder"></span>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-md-3">
+                            <nop-label asp-for="LinkUrl" />
+                        </div>
+                        <div class="col-md-9">
+                            <nop-editor asp-for="LinkUrl" />
+                            <span asp-validation-for="LinkUrl"></span>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-md-3">
+                            <nop-label asp-for="AltText" />
+                        </div>
+                        <div class="col-md-9">
+                            <nop-editor asp-for="AltText" />
+                            <span asp-validation-for="AltText"></span>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-md-3">
+                            <nop-label asp-for="StartDateUtc" />
+                        </div>
+                        <div class="col-md-9">
+                            <nop-editor asp-for="StartDateUtc" />
+                            <span asp-validation-for="StartDateUtc"></span>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-md-3">
+                            <nop-label asp-for="EndDateUtc" />
+                        </div>
+                        <div class="col-md-9">
+                            <nop-editor asp-for="EndDateUtc" />
+                            <span asp-validation-for="EndDateUtc"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

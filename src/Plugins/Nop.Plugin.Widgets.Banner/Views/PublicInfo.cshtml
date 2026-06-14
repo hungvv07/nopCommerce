@@ -1,0 +1,23 @@
+@model PublicInfoModel
+@{
+    Layout = "";
+}
+
+@if (Model.Banners?.Any() == true)
+{
+    <div class="nop-banner-widget">
+        @foreach (var banner in Model.Banners)
+        {
+            if (!string.IsNullOrEmpty(banner.LinkUrl))
+            {
+                <a href="@banner.LinkUrl" class="nop-banner-item">
+                    <img src="@banner.PictureUrl" alt="@banner.AltText" style="max-width:100%;height:auto;display:block;" />
+                </a>
+            }
+            else
+            {
+                <img src="@banner.PictureUrl" alt="@banner.AltText" class="nop-banner-item" style="max-width:100%;height:auto;display:block;" />
+            }
+        }
+    </div>
+}

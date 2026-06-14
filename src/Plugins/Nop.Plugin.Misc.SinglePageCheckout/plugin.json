@@ -1,0 +1,11 @@
+{
+  "Group": "Misc",
+  "FriendlyName": "Single Page Checkout",
+  "SystemName": "Misc.SinglePageCheckout",
+  "Version": "4.90.1",
+  "SupportedVersions": [ "4.90" ],
+  "Author": "Tony Vu",
+  "DisplayOrder": 1,
+  "FileName": "Nop.Plugin.Misc.SinglePageCheckout.dll",
+  "Description": "Replaces the default multi-step checkout with a true single-page checkout: billing, shipping, shipping method, payment, order summary, discount, gift cards and checkout attributes all rendered on one screen with a single Complete button. Reuses nopCommerce's existing checkout pipeline."
+}

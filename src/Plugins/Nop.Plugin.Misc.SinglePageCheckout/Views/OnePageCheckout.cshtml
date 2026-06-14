@@ -1,0 +1,29 @@
+@using Nop.Web.Models.Checkout
+@model OnePageCheckoutModel
+@{
+    Layout = "_ColumnsOne";
+
+    //title
+    NopHtml.AddTitleParts(T("PageTitle.Checkout").Text);
+    //page class
+    NopHtml.AppendPageCssClassParts("html-checkout-page");
+    NopHtml.AppendPageCssClassParts("html-single-page-checkout");
+}
+
+<link rel="stylesheet" href="~/Plugins/Misc.SinglePageCheckout/Content/spc.css" />
+@* reuse nop's Billing/Shipping modules for the address-book + new-address toggling; the single page drives submission itself *@
+<script src="~/js/public.onepagecheckout.js" asp-location="Footer"></script>
+<script src="~/Plugins/Misc.SinglePageCheckout/Content/spc.js" asp-location="Footer"></script>
+
+<div class="page checkout-page single-page-checkout">
+    @* a page-level antiforgery token so the plugin's AJAX posts satisfy the checkout controller's [AutoValidateAntiforgeryToken] *@
+    <form id="spc-antiforgery-form">@Html.AntiForgeryToken()</form>
+    <div class="page-title">
+        <h1>@T("Checkout")</h1>
+    </div>
+    <div class="page-body checkout-data">
+        @await Component.InvokeAsync(typeof(WidgetViewComponent), new { widgetZone = PublicWidgetZones.OpcContentBefore, additionalData = Model })
+        @await Component.InvokeAsync("SinglePageCheckout")
+        @await Component.InvokeAsync(typeof(WidgetViewComponent), new { widgetZone = PublicWidgetZones.OpcContentAfter, additionalData = Model })
+    </div>
+</div>

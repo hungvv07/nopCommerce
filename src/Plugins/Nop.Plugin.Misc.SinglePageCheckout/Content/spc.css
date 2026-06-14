@@ -1,0 +1,140 @@
+/* ============================================================
+   Single Page Checkout layout
+   The plugin reuses nopCommerce's accordion-oriented checkout
+   partials, whose default theme styling assumes a full-width
+   single column. These rules make them flow inside the
+   3-column single-page grid.
+   ============================================================ */
+
+.single-page-checkout #spc-antiforgery-form { display: none; }
+
+/* ---- column grid ---- */
+.single-page-checkout .spc-columns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    align-items: flex-start;
+}
+
+.single-page-checkout .spc-col {
+    flex: 1 1 0;
+    min-width: 0; /* critical: lets flex items shrink so children don't overflow */
+}
+
+.single-page-checkout .spc-col-addresses,
+.single-page-checkout .spc-col-methods { flex-basis: 32%; }
+.single-page-checkout .spc-col-summary { flex-basis: 34%; }
+
+.single-page-checkout .spc-section {
+    margin: 0 0 24px;
+    padding: 16px 18px;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    background: #fff;
+}
+
+.single-page-checkout .spc-section-title {
+    margin: 0 0 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eee;
+    font-size: 18px;
+    text-align: left;
+}
+
+/* neutralise the accordion ".step" centering/padding inherited from the theme */
+.single-page-checkout .spc-section .checkout-data,
+.single-page-checkout .spc-section .step,
+.single-page-checkout .spc-section .section { text-align: left; }
+.single-page-checkout .spc-section .section { margin: 0 0 14px; }
+
+/* ---- address forms: stack label over a full-width control ---- */
+.single-page-checkout .inputs {
+    white-space: normal;
+    text-align: left;
+    margin: 0 0 12px;
+}
+
+.single-page-checkout .inputs label {
+    display: block;
+    width: auto;
+    margin: 0 0 4px;
+    text-align: left;
+    font-weight: 600;
+}
+
+.single-page-checkout .inputs input[type="text"],
+.single-page-checkout .inputs input[type="email"],
+.single-page-checkout .inputs input[type="tel"],
+.single-page-checkout .inputs input[type="password"],
+.single-page-checkout .inputs select,
+.single-page-checkout .inputs textarea {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.single-page-checkout .inputs .required {
+    margin-left: 3px;
+    color: #e4434b;
+}
+
+/* keep any control inside its column */
+.single-page-checkout .spc-section input,
+.single-page-checkout .spc-section select,
+.single-page-checkout .spc-section textarea {
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.single-page-checkout .address-select,
+.single-page-checkout .opc-select-address-container select { width: 100%; box-sizing: border-box; }
+
+/* ---- shipping / payment method lists: left aligned blocks ---- */
+.single-page-checkout .method-list {
+    margin: 0 0 10px;
+    text-align: left;
+    font-size: 14px;
+    overflow: visible;
+}
+.single-page-checkout .method-list li { margin: 10px 0; text-align: left; }
+.single-page-checkout .payment-method .payment-logo { margin-right: 8px; }
+.single-page-checkout .payment-method .payment-logo img { max-height: 32px; width: auto; }
+.single-page-checkout .payment-method .payment-details { width: auto; display: inline-block; margin: 0; vertical-align: middle; }
+.single-page-checkout .payment-description,
+.single-page-checkout .method-description { font-weight: normal; color: #777; }
+
+/* ---- payment info (e.g. credit card) table -> stacked, full width ---- */
+.single-page-checkout .payment-info .info { padding: 0; width: 100%; }
+.single-page-checkout .payment-info .info table { width: 100%; }
+.single-page-checkout .payment-info .info td {
+    display: block;
+    width: 100% !important;
+    text-align: left !important;
+    padding: 2px 0;
+}
+.single-page-checkout .payment-info .info input,
+.single-page-checkout .payment-info .info select { width: 100%; max-width: 100%; box-sizing: border-box; }
+
+/* ---- order summary inside its column ---- */
+.single-page-checkout .spc-col-summary .order-summary-content .table-wrapper { overflow-x: auto; }
+.single-page-checkout .spc-col-summary .cart-footer .totals { width: 100%; float: none; }
+.single-page-checkout .spc-col-summary .cart-footer .cart-collaterals { width: 100%; }
+
+/* ---- discount / gift card boxes ---- */
+.single-page-checkout .spc-deals input[type="text"] { width: 100%; box-sizing: border-box; margin-bottom: 8px; }
+
+/* ---- messages + place order ---- */
+.single-page-checkout #spc-messages { margin-bottom: 18px; }
+
+.single-page-checkout .spc-place-order { text-align: right; margin-top: 8px; }
+.single-page-checkout .spc-place-order .button-1 { min-width: 160px; }
+.single-page-checkout .spc-place-order .please-wait { display: inline-block; margin-left: 10px; }
+
+/* ---- responsive: stack columns on narrow viewports ---- */
+@media (max-width: 1000px) {
+    .single-page-checkout .spc-columns { flex-direction: column; }
+    .single-page-checkout .spc-col,
+    .single-page-checkout .spc-col-addresses,
+    .single-page-checkout .spc-col-methods,
+    .single-page-checkout .spc-col-summary { width: 100%; flex-basis: auto; }
+}

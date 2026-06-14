@@ -5,20 +5,34 @@
 #   1. Set the env var POSTGRES_PASSWORD to a strong value.
 #   2. Assign a domain to the nopcommerce_web service (Coolify's proxy routes to the exposed port 80).
 #
-# On first run, open your domain -> you land on /install. Choose:
-#   - Database type: PostgreSQL
-#   - Raw connection string:
-#       Host=nopcommerce_database;Port=5432;Database=nopcommerce;Username=nop;Password=YOUR_PASSWORD;
-#   - TICK "Create database if it doesn't exist"  <-- REQUIRED (see note below)
-#   - Tick "Create sample data" for demo data.
+# ── INSTALL: two options ────────────────────────────────────────────────────
 #
-# IMPORTANT: POSTGRES_DB is intentionally NOT set. nopCommerce only creates the
-# required PostgreSQL extensions (citext, pgcrypto) when it creates the database
-# itself. If Postgres pre-creates the "nopcommerce" database, nopCommerce skips
-# that step and the migration fails with: type "citext" does not exist.
-# So we let nopCommerce create the database (via the wizard checkbox above).
-# The postgres image will create a throwaway default DB named "nop" (= the user);
-# it is unused and harmless.
+# Option A — MANUAL wizard (default; leave NOP_AUTO_INSTALL unset):
+#   On first run open your domain -> /install. Choose:
+#     - Database type: PostgreSQL
+#     - Raw connection string:
+#         Host=nopcommerce_database;Port=5432;Database=nopcommerce;Username=nop;Password=YOUR_PASSWORD;
+#     - TICK "Create database if it doesn't exist"   (REQUIRED, see note below)
+#     - TICK "Create sample data" for demo data
+#
+# Option B — AUTOMATED headless install (the nopcommerce_installer sidecar):
+#   Set these env vars in the Coolify UI, then deploy:
+#     NOP_AUTO_INSTALL=true
+#     NOP_ADMIN_EMAIL=admin@yourstore.com
+#     NOP_ADMIN_PASSWORD=Your_Strong_Pw1
+#     NOP_SAMPLE_DATA=true            # demo data
+#   The sidecar waits for the web app, then POSTs to /install with a fresh
+#   antiforgery token. It is idempotent: if the store is already installed it
+#   exits immediately. Do NOT also run the manual wizard.
+#
+# ── IMPORTANT: why POSTGRES_DB is not set ───────────────────────────────────
+#   nopCommerce only creates the required PostgreSQL extensions (citext,
+#   pgcrypto) when it creates the database itself. If Postgres pre-creates the
+#   "nopcommerce" database, nopCommerce skips that step and the migration fails
+#   with: type "citext" does not exist. So we let nopCommerce create the
+#   database ("Create database if it doesn't exist" / CreateDatabaseIfNotExists).
+#   The postgres image will create a throwaway default DB named "nop" (= the
+#   user); it is unused and harmless.
 #
 # Note: the named volumes below are auto-seeded by Docker from the image on first
 # creation, so the installer's bundled App_Data files are preserved while your
@@ -49,6 +63,25 @@ services:
             POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}   # set this in the Coolify UI
         volumes:
             - nop_pgdata:/var/lib/postgresql/data
+
+    # One-shot automated installer. No-op unless NOP_AUTO_INSTALL=true.
+    nopcommerce_installer:
+        image: "curlimages/curl:8.10.1"
+        restart: "no"
+        depends_on:
+            - nopcommerce_web
+        environment:
+            NOP_AUTO_INSTALL: ${NOP_AUTO_INSTALL:-false}
+            NOP_URL: ${NOP_URL:-http://nopcommerce_web:80}
+            NOP_ADMIN_EMAIL: ${NOP_ADMIN_EMAIL:-admin@yourstore.com}
+            NOP_ADMIN_PASSWORD: ${NOP_ADMIN_PASSWORD:-}
+            NOP_SAMPLE_DATA: ${NOP_SAMPLE_DATA:-true}
+            # Connection string used by the installer. Defaults to the in-stack
+            # Postgres; override NOP_CONNECTION_STRING if you use an external DB.
+            NOP_CONNECTION_STRING: ${NOP_CONNECTION_STRING:-Host=nopcommerce_database;Port=5432;Database=nopcommerce;Username=nop;Password=${POSTGRES_PASSWORD};}
+        volumes:
+            - ./docker/nop-auto-install.sh:/auto-install.sh:ro
+        entrypoint: ["/bin/sh", "/auto-install.sh"]
 
 volumes:
     nop_app_data:

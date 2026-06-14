@@ -1,0 +1,75 @@
+@model OrderModel
+
+@{
+    Layout = "";
+
+    //local helper that renders the incl/excl-tax value the same way the order details page does.
+    //the price strings are already HTML-formatted, so callers wrap the result in Html.Raw.
+    string renderPrice(string inclTax, string exclTax)
+    {
+        if (Model.AllowCustomersToSelectTaxDisplayType)
+            return $"<div>{inclTax}</div><div>{exclTax}</div>";
+
+        return Model.TaxDisplayType == TaxDisplayType.ExcludingTax ? exclTax : inclTax;
+    }
+}
+
+@if (Model.Items == null || !Model.Items.Any())
+{
+    <div class="oird-loading">@T("Plugins.Widgets.OrderItemsRowDetails.NoProducts")</div>
+}
+else
+{
+    <table class="table table-hover table-bordered">
+        <thead>
+            <tr>
+                <th>@T("Admin.Orders.Products.Picture")</th>
+                <th>@T("Admin.Orders.Products.ProductName")</th>
+                <th>@T("Admin.Orders.Products.Price")</th>
+                <th>@T("Admin.Orders.Products.Quantity")</th>
+                <th>@T("Admin.Orders.Products.Discount")</th>
+                <th>@T("Admin.Orders.Products.Total")</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Items)
+            {
+                <tr>
+                    <td>
+                        @if (!string.IsNullOrEmpty(item.PictureThumbnailUrl))
+                        {
+                            <img alt="" src="@item.PictureThumbnailUrl" />
+                        }
+                    </td>
+                    <td>
+                        <a href="@Url.Content($"~/Admin/Product/Edit/{item.ProductId}")">@item.ProductName</a>
+                        @if (!string.IsNullOrEmpty(item.VendorName))
+                        {
+                            <div><strong>@T("Admin.Orders.Products.Vendor"):</strong> @item.VendorName</div>
+                        }
+                        @if (!string.IsNullOrEmpty(item.Sku))
+                        {
+                            <div><strong>@T("Admin.Orders.Products.SKU"):</strong> @item.Sku</div>
+                        }
+                        @if (!string.IsNullOrEmpty(item.AttributeInfo))
+                        {
+                            <p>@Html.Raw(item.AttributeInfo)</p>
+                        }
+                        @if (!string.IsNullOrEmpty(item.RecurringInfo))
+                        {
+                            <p>@Html.Raw(item.RecurringInfo)</p>
+                        }
+                        @if (!string.IsNullOrEmpty(item.RentalInfo))
+                        {
+                            <p>@Html.Raw(item.RentalInfo)</p>
+                        }
+                    </td>
+                    <td>@Html.Raw(renderPrice(item.UnitPriceInclTax, item.UnitPriceExclTax))</td>
+                    <td>@item.Quantity</td>
+                    <td>@Html.Raw(renderPrice(item.DiscountInclTax, item.DiscountExclTax))</td>
+                    <td>@Html.Raw(renderPrice(item.SubTotalInclTax, item.SubTotalExclTax))</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

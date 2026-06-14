@@ -1,0 +1,11 @@
+{
+  "Group": "Widgets",
+  "FriendlyName": "Order items row details",
+  "SystemName": "Widgets.OrderItemsRowDetails",
+  "Version": "4.90.1",
+  "SupportedVersions": [ "4.90" ],
+  "Author": "Tony Vu",
+  "DisplayOrder": 1,
+  "FileName": "Nop.Plugin.Widgets.OrderItemsRowDetails.dll",
+  "Description": "Adds an expandable arrow to each row of the admin order list that AJAX-loads that order's products inline (DataTables row details), without opening the order details page"
+}

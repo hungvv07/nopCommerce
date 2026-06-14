@@ -1,0 +1,137 @@
+@{
+    var ordersGridId = Nop.Plugin.Widgets.OrderItemsRowDetails.WidgetsOrderItemsRowDetailsDefaults.OrdersGridId;
+    var itemsUrl = Url.Content("~/Admin/WidgetsOrderItemsRowDetails/OrderItems");
+    var showText = T("Plugins.Widgets.OrderItemsRowDetails.ShowProducts").Text;
+    var hideText = T("Plugins.Widgets.OrderItemsRowDetails.HideProducts").Text;
+    var loadingText = T("Plugins.Widgets.OrderItemsRowDetails.Loading").Text;
+    var errorText = T("Plugins.Widgets.OrderItemsRowDetails.LoadError").Text;
+}
+
+<style>
+    .oird-control {
+        cursor: pointer;
+        margin-right: 6px;
+        color: #4f8bce;
+        user-select: none;
+    }
+
+    .oird-control:hover {
+        color: #2e6da4;
+    }
+
+    .oird-child-wrapper {
+        padding: 10px 15px;
+        background-color: #f8f9fa;
+    }
+
+    .oird-loading,
+    .oird-error {
+        padding: 8px 4px;
+        color: #6c757d;
+    }
+
+    .oird-error {
+        color: #dc3545;
+    }
+</style>
+
+<script asp-location="Footer">
+    (function () {
+        var tableId = '@ordersGridId';
+        var itemsUrl = '@itemsUrl';
+        var showText = '@Html.Raw(JavaScriptEncoder.Default.Encode(showText))';
+        var hideText = '@Html.Raw(JavaScriptEncoder.Default.Encode(hideText))';
+        var loadingText = '@Html.Raw(JavaScriptEncoder.Default.Encode(loadingText))';
+        var errorText = '@Html.Raw(JavaScriptEncoder.Default.Encode(errorText))';
+
+        //inject an expand control into the first data cell of each visible row
+        function injectControls(api) {
+            api.rows({ page: 'current' }).every(function () {
+                var rowNode = this.node();
+                var cells = $(rowNode).children('td');
+                //place the control in the order-number cell (second column, after the checkbox);
+                //fall back to the first cell if the layout has fewer columns
+                var controlCell = cells.length > 1 ? cells.eq(1) : cells.first();
+                if (controlCell.length === 0)
+                    return;
+                if (controlCell.find('.oird-control').length > 0)
+                    return;
+                var shown = api.row(rowNode).child.isShown();
+                var icon = shown ? 'fa-minus-square' : 'fa-plus-square';
+                var title = shown ? hideText : showText;
+                controlCell.prepend('<span class="oird-control" title="' + title + '"><i class="far ' + icon + '"></i></span>');
+            });
+        }
+
+        function setIcon(control, shown) {
+            control.attr('title', shown ? hideText : showText);
+            control.find('i').toggleClass('fa-minus-square', shown).toggleClass('fa-plus-square', !shown);
+        }
+
+        function toggleRow(control) {
+            var tr = control.closest('tr');
+            var api = $('#' + tableId).DataTable();
+            var row = api.row(tr);
+
+            if (row.child.isShown()) {
+                row.child.hide();
+                tr.removeClass('oird-shown');
+                setIcon(control, false);
+                return;
+            }
+
+            var data = row.data();
+            if (!data || !data.Id)
+                return;
+
+            setIcon(control, true);
+            tr.addClass('oird-shown');
+            row.child('<div class="oird-child-wrapper"><div class="oird-loading">' + loadingText + '</div></div>').show();
+
+            $.ajax({
+                cache: false,
+                type: 'GET',
+                url: itemsUrl,
+                data: { orderId: data.Id },
+                success: function (html) {
+                    if (api.row(tr).child.isShown())
+                        api.row(tr).child($('<div class="oird-child-wrapper"></div>').html(html)).show();
+                },
+                error: function () {
+                    if (api.row(tr).child.isShown())
+                        api.row(tr).child('<div class="oird-child-wrapper"><div class="oird-error">' + errorText + '</div></div>').show();
+                }
+            });
+        }
+
+        function bind() {
+            var table = $('#' + tableId);
+            if (table.length === 0 || !$.fn.dataTable.isDataTable(table))
+                return false;
+
+            var api = table.DataTable();
+            injectControls(api);
+            api.on('draw.dt', function () { injectControls(api); });
+
+            //delegated handler survives DataTables re-rendering the rows
+            table.on('click', 'tbody td .oird-control', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleRow($(this));
+            });
+
+            return true;
+        }
+
+        $(function () {
+            var table = $('#' + tableId);
+            if (table.length === 0)
+                return;
+
+            //the core grid initializes in a later $(function(){}); if it is not ready yet,
+            //wait for the DataTables init event fired on the table element.
+            if (!bind())
+                table.on('init.dt', function () { bind(); });
+        });
+    })();
+</script>

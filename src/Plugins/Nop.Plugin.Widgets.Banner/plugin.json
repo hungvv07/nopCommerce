@@ -1,0 +1,11 @@
+{
+  "Group": "Widgets",
+  "FriendlyName": "Banner widget",
+  "SystemName": "Widgets.Banner",
+  "Version": "4.90.1",
+  "SupportedVersions": [ "4.90" ],
+  "Author": "Tony Vu",
+  "DisplayOrder": 1,
+  "FileName": "Nop.Plugin.Widgets.Banner.dll",
+  "Description": "Displays an uploaded banner image in a chosen public widget zone, with an optional link and a start/end schedule"
+}

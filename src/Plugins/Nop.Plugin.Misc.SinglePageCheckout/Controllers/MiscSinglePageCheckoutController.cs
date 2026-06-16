@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Nop.Core;
 using Nop.Plugin.Misc.SinglePageCheckout.Models;
 using Nop.Services.Configuration;
@@ -52,6 +53,7 @@ public class MiscSinglePageCheckoutController : BasePluginController
         var model = new ConfigurationModel
         {
             Enabled = settings.Enabled,
+            LayoutTypeId = (int)settings.LayoutType,
             ShowDiscountBox = settings.ShowDiscountBox,
             ShowGiftCardBox = settings.ShowGiftCardBox,
             ShowCheckoutAttributes = settings.ShowCheckoutAttributes,
@@ -59,9 +61,23 @@ public class MiscSinglePageCheckoutController : BasePluginController
             ActiveStoreScopeConfiguration = storeScope
         };
 
+        model.AvailableLayouts.Add(new SelectListItem
+        {
+            Value = ((int)CheckoutLayoutType.Layout01).ToString(),
+            Text = await _localizationService.GetResourceAsync("Plugins.Misc.SinglePageCheckout.Layout.Layout01"),
+            Selected = settings.LayoutType == CheckoutLayoutType.Layout01
+        });
+        model.AvailableLayouts.Add(new SelectListItem
+        {
+            Value = ((int)CheckoutLayoutType.Layout02).ToString(),
+            Text = await _localizationService.GetResourceAsync("Plugins.Misc.SinglePageCheckout.Layout.Layout02"),
+            Selected = settings.LayoutType == CheckoutLayoutType.Layout02
+        });
+
         if (storeScope > 0)
         {
             model.Enabled_OverrideForStore = await _settingService.SettingExistsAsync(settings, x => x.Enabled, storeScope);
+            model.LayoutTypeId_OverrideForStore = await _settingService.SettingExistsAsync(settings, x => x.LayoutType, storeScope);
             model.ShowDiscountBox_OverrideForStore = await _settingService.SettingExistsAsync(settings, x => x.ShowDiscountBox, storeScope);
             model.ShowGiftCardBox_OverrideForStore = await _settingService.SettingExistsAsync(settings, x => x.ShowGiftCardBox, storeScope);
             model.ShowCheckoutAttributes_OverrideForStore = await _settingService.SettingExistsAsync(settings, x => x.ShowCheckoutAttributes, storeScope);
@@ -82,12 +98,14 @@ public class MiscSinglePageCheckoutController : BasePluginController
         var settings = await _settingService.LoadSettingAsync<SinglePageCheckoutSettings>(storeScope);
 
         settings.Enabled = model.Enabled;
+        settings.LayoutType = (CheckoutLayoutType)model.LayoutTypeId;
         settings.ShowDiscountBox = model.ShowDiscountBox;
         settings.ShowGiftCardBox = model.ShowGiftCardBox;
         settings.ShowCheckoutAttributes = model.ShowCheckoutAttributes;
         settings.ShowEstimateShipping = model.ShowEstimateShipping;
 
         await _settingService.SaveSettingOverridablePerStoreAsync(settings, x => x.Enabled, model.Enabled_OverrideForStore, storeScope, false);
+        await _settingService.SaveSettingOverridablePerStoreAsync(settings, x => x.LayoutType, model.LayoutTypeId_OverrideForStore, storeScope, false);
         await _settingService.SaveSettingOverridablePerStoreAsync(settings, x => x.ShowDiscountBox, model.ShowDiscountBox_OverrideForStore, storeScope, false);
         await _settingService.SaveSettingOverridablePerStoreAsync(settings, x => x.ShowGiftCardBox, model.ShowGiftCardBox_OverrideForStore, storeScope, false);
         await _settingService.SaveSettingOverridablePerStoreAsync(settings, x => x.ShowCheckoutAttributes, model.ShowCheckoutAttributes_OverrideForStore, storeScope, false);

@@ -60,6 +60,7 @@ public class SinglePageCheckoutPlugin : BasePlugin, IMiscPlugin
         await _settingService.SaveSettingAsync(new SinglePageCheckoutSettings
         {
             Enabled = true,
+            LayoutType = CheckoutLayoutType.Layout01,
             ShowDiscountBox = true,
             ShowGiftCardBox = true,
             ShowCheckoutAttributes = true,
@@ -78,6 +79,20 @@ public class SinglePageCheckoutPlugin : BasePlugin, IMiscPlugin
         {
             ["Plugins.Misc.SinglePageCheckout.Fields.Enabled"] = "Enabled",
             ["Plugins.Misc.SinglePageCheckout.Fields.Enabled.Hint"] = "When enabled, the storefront checkout is rendered as a single page. When disabled, nopCommerce falls back to its default checkout.",
+            ["Plugins.Misc.SinglePageCheckout.Fields.LayoutType"] = "Checkout layout",
+            ["Plugins.Misc.SinglePageCheckout.Fields.LayoutType.Hint"] = "Choose which checkout template to use.",
+            ["Plugins.Misc.SinglePageCheckout.Layout.Layout01"] = "Layout 01 - Single page (3 columns)",
+            ["Plugins.Misc.SinglePageCheckout.Layout.Layout02"] = "Layout 02 - Stepped (2 columns)",
+            ["Plugins.Misc.SinglePageCheckout.Summary"] = "Summary",
+            ["Plugins.Misc.SinglePageCheckout.InYourCart"] = "In your cart ({0})",
+            ["Plugins.Misc.SinglePageCheckout.EditCart"] = "Edit cart",
+            ["Plugins.Misc.SinglePageCheckout.Step.Billing"] = "Billing",
+            ["Plugins.Misc.SinglePageCheckout.Step.Shipping"] = "Shipping",
+            ["Plugins.Misc.SinglePageCheckout.Step.Payment"] = "Payment",
+            ["Plugins.Misc.SinglePageCheckout.ContinueTo.Shipping"] = "Continue to shipping",
+            ["Plugins.Misc.SinglePageCheckout.ContinueTo.Payment"] = "Continue to payment",
+            ["Plugins.Misc.SinglePageCheckout.UseNewAddress"] = "Use a new address",
+            ["Plugins.Misc.SinglePageCheckout.Qty"] = "Qty",
             ["Plugins.Misc.SinglePageCheckout.Fields.ShowDiscountBox"] = "Show discount code box",
             ["Plugins.Misc.SinglePageCheckout.Fields.ShowDiscountBox.Hint"] = "Show the discount coupon entry box on the checkout page.",
             ["Plugins.Misc.SinglePageCheckout.Fields.ShowGiftCardBox"] = "Show gift card box",

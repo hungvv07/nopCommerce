@@ -131,7 +131,11 @@ public class SinglePageCheckoutViewComponent : NopViewComponent
         if (_settings.ShowEstimateShipping && model.ShippingRequired)
             model.EstimateShipping = await _shoppingCartModelFactory.PrepareEstimateShippingModelAsync(cart);
 
-        return View("~/Plugins/Misc.SinglePageCheckout/Views/Components/SinglePageCheckout/Default.cshtml", model);
+        var viewName = _settings.LayoutType == CheckoutLayoutType.Layout02
+            ? "~/Plugins/Misc.SinglePageCheckout/Views/Components/SinglePageCheckout/Layout02.cshtml"
+            : "~/Plugins/Misc.SinglePageCheckout/Views/Components/SinglePageCheckout/Default.cshtml";
+
+        return View(viewName, model);
     }
 
     #endregion

@@ -138,3 +138,107 @@
     .single-page-checkout .spc-col-methods,
     .single-page-checkout .spc-col-summary { width: 100%; flex-basis: auto; }
 }
+
+/* ============================================================
+   Layout 02 - stepped two-column checkout
+   ============================================================ */
+.single-page-checkout .spc2-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 28px;
+    align-items: flex-start;
+}
+.single-page-checkout .spc2-main { flex: 1 1 0; min-width: 0; }
+.single-page-checkout .spc2-sidebar { flex: 0 0 340px; max-width: 340px; position: sticky; top: 16px; }
+
+/* ---- steps / accordion ---- */
+.single-page-checkout .spc2-step { margin: 0 0 14px; border: 1px solid #e2e2e2; }
+.single-page-checkout .spc2-step-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 18px;
+    background: #333;
+    color: #fff;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    font-weight: 700;
+}
+.single-page-checkout .spc2-step:not(.is-open) .spc2-step-header { background: #f3f3f3; color: #333; }
+.single-page-checkout .spc2-num {
+    width: 26px; height: 26px; line-height: 26px;
+    text-align: center; border-radius: 50%;
+    background: rgba(255, 255, 255, .2); font-size: 14px;
+}
+.single-page-checkout .spc2-step:not(.is-open) .spc2-num { background: #ddd; }
+.single-page-checkout .spc2-step-title { font-size: 16px; }
+.single-page-checkout .spc2-step-body { display: none; padding: 20px; background: #fff; }
+.single-page-checkout .spc2-step.is-open .spc2-step-body { display: block; }
+.single-page-checkout .spc2-subtitle { margin: 22px 0 12px; font-size: 15px; font-weight: 700; }
+.single-page-checkout .spc2-actions { margin-top: 18px; text-align: right; }
+
+/* ---- address forms: pair fields two-per-row ---- */
+.single-page-checkout .spc-layout02 .edit-address {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 16px;
+}
+/* keep the validation summary / address-attributes full width */
+.single-page-checkout .spc-layout02 .edit-address > .message-error { grid-column: 1 / -1; }
+
+/* hide nop's default single-line address <select> block (we use cards) */
+.single-page-checkout .spc-layout02 .select-billing-address,
+.single-page-checkout .spc-layout02 .select-shipping-address { display: none; }
+
+/* ---- multi-row address cards ---- */
+.single-page-checkout .spc2-addr-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 12px;
+    margin: 0 0 20px;
+}
+.single-page-checkout .spc2-addr-card {
+    display: flex;
+    gap: 10px;
+    padding: 12px 14px;
+    border: 1px solid #d9d9d9;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: normal;
+}
+.single-page-checkout .spc2-addr-card.is-selected { border-color: #ff6700; box-shadow: 0 0 0 1px #ff6700 inset; }
+.single-page-checkout .spc2-addr-card input[type="radio"] { margin-top: 3px; }
+.single-page-checkout .spc2-addr-card-body { display: flex; flex-direction: column; gap: 2px; font-size: 13px; color: #555; }
+.single-page-checkout .spc2-addr-card-body strong { color: #222; font-size: 14px; }
+.single-page-checkout .spc2-addr-card-new { align-items: center; }
+
+/* ---- place order ---- */
+.single-page-checkout .spc2-place { margin-top: 22px; text-align: right; }
+.single-page-checkout .spc2-place-order { min-width: 180px; }
+.single-page-checkout .spc2-place .please-wait { display: inline-block; margin-left: 10px; }
+
+/* ---- sidebar boxes ---- */
+.single-page-checkout .spc2-box { border: 1px solid #e2e2e2; padding: 18px; margin: 0 0 18px; background: #fff; }
+.single-page-checkout .spc2-box-title { margin: 0 0 14px; font-size: 16px; font-weight: 700; text-transform: uppercase; }
+.single-page-checkout .spc2-summary .cart-total td { padding: 4px 0; }
+.single-page-checkout .spc2-summary .order-total td { font-size: 16px; }
+
+/* ---- cart items in the sidebar ---- */
+.single-page-checkout .spc2-cart-items { list-style: none; margin: 0; padding: 0; }
+.single-page-checkout .spc2-cart-item { display: flex; gap: 12px; padding: 12px 0; border-top: 1px solid #eee; }
+.single-page-checkout .spc2-cart-item:first-child { border-top: 0; }
+.single-page-checkout .spc2-cart-item-img { flex: 0 0 64px; }
+.single-page-checkout .spc2-cart-item-img img { width: 64px; height: auto; }
+.single-page-checkout .spc2-cart-item-info { font-size: 13px; color: #555; }
+.single-page-checkout .spc2-cart-item-name { font-weight: 700; color: #222; margin-bottom: 4px; }
+.single-page-checkout .spc2-cart-item-price { color: #ff6700; font-weight: 700; margin-top: 4px; }
+.single-page-checkout .spc2-edit-cart { display: inline-block; margin-top: 14px; text-decoration: underline; }
+
+.single-page-checkout .spc2-deals input[type="text"] { width: 100%; box-sizing: border-box; margin-bottom: 8px; }
+
+@media (max-width: 1000px) {
+    .single-page-checkout .spc2-grid { flex-direction: column; }
+    .single-page-checkout .spc2-sidebar { flex-basis: auto; max-width: none; width: 100%; position: static; }
+    .single-page-checkout .spc-layout02 .edit-address { grid-template-columns: 1fr; }
+}

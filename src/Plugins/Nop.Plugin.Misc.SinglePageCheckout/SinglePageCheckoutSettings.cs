@@ -14,6 +14,11 @@ public class SinglePageCheckoutSettings : ISettings
     public bool Enabled { get; set; }
 
     /// <summary>
+    /// Gets or sets the layout template used to render the checkout
+    /// </summary>
+    public CheckoutLayoutType LayoutType { get; set; }
+
+    /// <summary>
     /// Gets or sets a value indicating whether the discount coupon box is shown
     /// </summary>
     public bool ShowDiscountBox { get; set; }

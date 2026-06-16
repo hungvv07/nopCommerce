@@ -1,0 +1,260 @@
+@using Nop.Core
+@using Nop.Core.Http
+@using Nop.Plugin.Misc.SinglePageCheckout.Models
+@using Nop.Web.Components
+@using Nop.Web.Framework.Components
+@using Nop.Web.Framework.Infrastructure
+@using Nop.Web.Models.Checkout
+@using Nop.Web.Models.Common
+@using Nop.Web.Models.ShoppingCart
+@model SinglePageCheckoutModel
+@inject IWebHelper webHelper
+@{
+    var checkoutUrl = $"{webHelper.GetStoreLocation()}checkout/";
+    var completedUrl = Url.RouteUrl(NopRouteNames.Standard.CHECKOUT_COMPLETED);
+
+    var stepNo = 0;
+    var billingNo = ++stepNo;
+    var shippingNo = Model.ShippingRequired ? ++stepNo : 0;
+    var paymentNo = ++stepNo;
+}
+
+<div class="spc spc-layout02"
+     data-checkout-url="@checkoutUrl"
+     data-completed-url="@completedUrl"
+     data-fail-msg="@T("Plugins.Misc.SinglePageCheckout.SectionFailed")"
+     data-shipping-required="@Model.ShippingRequired.ToString().ToLowerInvariant()"
+     data-payment-required="@Model.PaymentRequired.ToString().ToLowerInvariant()"
+     data-payment-info="@((Model.PaymentInfo != null).ToString().ToLowerInvariant())"
+     data-billing-newaddr-id="@(Model.OnePageCheckout.BillingAddress.BillingNewAddress.Id)">
+
+    <div id="spc-messages" class="message-error" style="display: none;">
+        <ul></ul>
+    </div>
+
+    <div class="spc2-grid">
+        <div class="spc2-main">
+
+            @* ---------- Step 1: Billing ---------- *@
+            <section class="spc2-step is-open" id="spc2-step-billing">
+                <div class="spc2-step-header" data-step="spc2-step-billing">
+                    <span class="spc2-num">@billingNo</span>
+                    <span class="spc2-step-title">@T("Plugins.Misc.SinglePageCheckout.Step.Billing")</span>
+                </div>
+                <div class="spc2-step-body">
+                    <div id="opc-billing">
+                        @if (Model.OnePageCheckout.BillingAddress.ExistingAddresses.Count > 0)
+                        {
+                            <div class="spc2-addr-cards" data-target="#billing-address-select">
+                                @foreach (var address in Model.OnePageCheckout.BillingAddress.ExistingAddresses)
+                                {
+                                    <label class="spc2-addr-card">
+                                        <input type="radio" name="spc2-billing-addr" value="@address.Id" />
+                                        <span class="spc2-addr-card-body">
+                                            <strong>@address.FirstName @address.LastName</strong>
+                                            <span>@address.Address1</span>
+                                            @if (!string.IsNullOrEmpty(address.Address2))
+                                            {
+                                                <span>@address.Address2</span>
+                                            }
+                                            <span>@address.City@(string.IsNullOrEmpty(address.StateProvinceName) ? "" : ", " + address.StateProvinceName) @address.ZipPostalCode</span>
+                                            <span>@address.CountryName</span>
+                                            @if (!string.IsNullOrEmpty(address.PhoneNumber))
+                                            {
+                                                <span>@address.PhoneNumber</span>
+                                            }
+                                        </span>
+                                    </label>
+                                }
+                                <label class="spc2-addr-card spc2-addr-card-new">
+                                    <input type="radio" name="spc2-billing-addr" value="0" />
+                                    <span class="spc2-addr-card-body">
+                                        <strong>@T("Plugins.Misc.SinglePageCheckout.UseNewAddress")</strong>
+                                    </span>
+                                </label>
+                            </div>
+                        }
+                        <form id="co-billing-form" action="" method="post">
+                            <div id="checkout-billing-load">
+                                @await Html.PartialAsync("~/Views/Checkout/OpcBillingAddress.cshtml", Model.OnePageCheckout.BillingAddress)
+                            </div>
+                        </form>
+                    </div>
+                    <div class="spc2-actions">
+                        @if (Model.ShippingRequired)
+                        {
+                            <button type="button" class="button-1 spc2-continue" data-next="spc2-step-shipping">@T("Plugins.Misc.SinglePageCheckout.ContinueTo.Shipping")</button>
+                        }
+                        else
+                        {
+                            <button type="button" class="button-1 spc2-continue" data-next="spc2-step-payment">@T("Plugins.Misc.SinglePageCheckout.ContinueTo.Payment")</button>
+                        }
+                    </div>
+                </div>
+            </section>
+
+            @* ---------- Step 2: Shipping ---------- *@
+            @if (Model.ShippingRequired)
+            {
+                <section class="spc2-step" id="spc2-step-shipping">
+                    <div class="spc2-step-header" data-step="spc2-step-shipping">
+                        <span class="spc2-num">@shippingNo</span>
+                        <span class="spc2-step-title">@T("Plugins.Misc.SinglePageCheckout.Step.Shipping")</span>
+                    </div>
+                    <div class="spc2-step-body">
+                        @if (Model.ShippingAddress != null)
+                        {
+                            <div id="opc-shipping">
+                                @if (Model.ShippingAddress.ExistingAddresses.Count > 0)
+                                {
+                                    <div class="spc2-addr-cards" data-target="#shipping-address-select">
+                                        @foreach (var address in Model.ShippingAddress.ExistingAddresses)
+                                        {
+                                            <label class="spc2-addr-card">
+                                                <input type="radio" name="spc2-shipping-addr" value="@address.Id" />
+                                                <span class="spc2-addr-card-body">
+                                                    <strong>@address.FirstName @address.LastName</strong>
+                                                    <span>@address.Address1</span>
+                                                    @if (!string.IsNullOrEmpty(address.Address2))
+                                                    {
+                                                        <span>@address.Address2</span>
+                                                    }
+                                                    <span>@address.City@(string.IsNullOrEmpty(address.StateProvinceName) ? "" : ", " + address.StateProvinceName) @address.ZipPostalCode</span>
+                                                    <span>@address.CountryName</span>
+                                                </span>
+                                            </label>
+                                        }
+                                        <label class="spc2-addr-card spc2-addr-card-new">
+                                            <input type="radio" name="spc2-shipping-addr" value="0" />
+                                            <span class="spc2-addr-card-body">
+                                                <strong>@T("Plugins.Misc.SinglePageCheckout.UseNewAddress")</strong>
+                                            </span>
+                                        </label>
+                                    </div>
+                                }
+                                <form id="co-shipping-form" action="" method="post">
+                                    <div id="checkout-shipping-load">
+                                        @await Html.PartialAsync("~/Views/Checkout/OpcShippingAddress.cshtml", Model.ShippingAddress)
+                                    </div>
+                                </form>
+                            </div>
+                        }
+                        @if (Model.ShippingMethod != null)
+                        {
+                            <h3 class="spc2-subtitle">@T("Checkout.ShippingMethod")</h3>
+                            <form id="co-shipping-method-form" action="" method="post">
+                                <div id="checkout-shipping-method-load">
+                                    @await Html.PartialAsync("~/Views/Checkout/OpcShippingMethods.cshtml", Model.ShippingMethod)
+                                </div>
+                            </form>
+                        }
+                        <div class="spc2-actions">
+                            <button type="button" class="button-1 spc2-continue" data-next="spc2-step-payment">@T("Plugins.Misc.SinglePageCheckout.ContinueTo.Payment")</button>
+                        </div>
+                    </div>
+                </section>
+            }
+
+            @* ---------- Step 3: Payment ---------- *@
+            <section class="spc2-step" id="spc2-step-payment">
+                <div class="spc2-step-header" data-step="spc2-step-payment">
+                    <span class="spc2-num">@paymentNo</span>
+                    <span class="spc2-step-title">@T("Plugins.Misc.SinglePageCheckout.Step.Payment")</span>
+                </div>
+                <div class="spc2-step-body">
+                    @if (Model.PaymentRequired && Model.PaymentMethod != null)
+                    {
+                        <form id="co-payment-method-form" action="" method="post">
+                            <div id="checkout-payment-method-load">
+                                @await Html.PartialAsync("~/Views/Checkout/OpcPaymentMethods.cshtml", Model.PaymentMethod)
+                            </div>
+                        </form>
+                    }
+                    @if (Model.PaymentInfo != null)
+                    {
+                        <h3 class="spc2-subtitle">@T("Checkout.PaymentInfo")</h3>
+                        <form id="co-payment-info-form" action="" method="post">
+                            <div id="checkout-payment-info-load">
+                                @await Html.PartialAsync("~/Views/Checkout/OpcPaymentInfo.cshtml", Model.PaymentInfo)
+                            </div>
+                        </form>
+                    }
+                    @if (Model.ShowCheckoutAttributes)
+                    {
+                        <div class="spc2-checkout-attributes">
+                            @await Html.PartialAsync("~/Views/Shared/_CheckoutAttributes.cshtml", Model.Cart)
+                        </div>
+                    }
+                    <div class="spc2-place">
+                        <button type="button" id="spc-place-order" class="button-1 spc2-place-order">
+                            @T("Plugins.Misc.SinglePageCheckout.PlaceOrder")
+                        </button>
+                        <span id="spc-please-wait" class="please-wait" style="display: none;">
+                            @T("Plugins.Misc.SinglePageCheckout.Submitting")
+                        </span>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        @* ---------- Sidebar: summary + cart ---------- *@
+        <aside class="spc2-sidebar">
+            <div class="spc2-box spc2-summary">
+                <h2 class="spc2-box-title">@T("Plugins.Misc.SinglePageCheckout.Summary")</h2>
+                @await Component.InvokeAsync(typeof(OrderTotalsViewComponent), new { isEditable = false })
+            </div>
+
+            <div class="spc2-box spc2-cart">
+                <h2 class="spc2-box-title">@string.Format(T("Plugins.Misc.SinglePageCheckout.InYourCart").Text, Model.Cart.Items.Count)</h2>
+                <ul class="spc2-cart-items">
+                    @foreach (var item in Model.Cart.Items)
+                    {
+                        <li class="spc2-cart-item">
+                            @if (Model.Cart.ShowProductImages && item.Picture != null)
+                            {
+                                <div class="spc2-cart-item-img">
+                                    <img src="@item.Picture.ImageUrl" alt="@item.Picture.AlternateText" />
+                                </div>
+                            }
+                            <div class="spc2-cart-item-info">
+                                <div class="spc2-cart-item-name">@item.ProductName</div>
+                                @if (Model.Cart.ShowSku && !string.IsNullOrEmpty(item.Sku))
+                                {
+                                    <div class="spc2-cart-item-sku">@T("ShoppingCart.SKU"): @item.Sku</div>
+                                }
+                                @if (!string.IsNullOrEmpty(item.AttributeInfo))
+                                {
+                                    <div class="spc2-cart-item-attrs">@Html.Raw(item.AttributeInfo)</div>
+                                }
+                                <div class="spc2-cart-item-qty">@T("Plugins.Misc.SinglePageCheckout.Qty"): @item.Quantity</div>
+                                <div class="spc2-cart-item-price">@item.SubTotal</div>
+                            </div>
+                        </li>
+                    }
+                </ul>
+                <a class="spc2-edit-cart" href="@Url.RouteUrl(NopRouteNames.General.CART)">@T("Plugins.Misc.SinglePageCheckout.EditCart")</a>
+            </div>
+
+            @if ((Model.ShowDiscountBox && Model.Cart.DiscountBox != null) || (Model.ShowGiftCardBox && Model.Cart.GiftCardBox != null))
+            {
+                <div class="spc2-box spc2-deals">
+                    @if (Model.ShowDiscountBox && Model.Cart.DiscountBox != null)
+                    {
+                        @await Html.PartialAsync("~/Views/Shared/_DiscountBox.cshtml", Model.Cart.DiscountBox)
+                    }
+                    @if (Model.ShowGiftCardBox && Model.Cart.GiftCardBox != null)
+                    {
+                        @await Html.PartialAsync("~/Views/ShoppingCart/_GiftCardBox.cshtml", Model.Cart.GiftCardBox)
+                    }
+                </div>
+            }
+
+            @if (Model.ShowEstimateShipping && Model.ShippingRequired)
+            {
+                <div class="spc2-box spc2-estimate">
+                    @await Component.InvokeAsync(typeof(ShoppingCartEstimateShippingViewComponent))
+                </div>
+            }
+        </aside>
+    </div>
+</div>

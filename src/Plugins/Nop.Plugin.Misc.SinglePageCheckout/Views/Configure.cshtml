@@ -24,6 +24,16 @@
                 </div>
                 <div class="form-group row">
                     <div class="col-md-3">
+                        <nop-override-store-checkbox asp-for="LayoutTypeId_OverrideForStore" asp-input="LayoutTypeId" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
+                        <nop-label asp-for="LayoutTypeId" />
+                    </div>
+                    <div class="col-md-9">
+                        <nop-select asp-for="LayoutTypeId" asp-items="Model.AvailableLayouts" />
+                        <span asp-validation-for="LayoutTypeId"></span>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-md-3">
                         <nop-override-store-checkbox asp-for="ShowDiscountBox_OverrideForStore" asp-input="ShowDiscountBox" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
                         <nop-label asp-for="ShowDiscountBox" />
                     </div>

@@ -49,6 +49,52 @@
                 $('#opc-shipping').toggle(!$cb.is(':checked'));
         }
 
+        //Layout 02: numbered-step accordion + multi-row address cards
+        function initLayout02() {
+            if (!$spc.hasClass('spc-layout02'))
+                return;
+
+            //accordion: only one step body open at a time
+            function openStep(id) {
+                $('.spc2-step').removeClass('is-open');
+                $('#' + id).addClass('is-open');
+            }
+            $spc.on('click', '.spc2-step-header', function () {
+                var id = $(this).data('step');
+                if ($('#' + id).hasClass('is-open'))
+                    $('#' + id).removeClass('is-open');
+                else
+                    openStep(id);
+            });
+            $spc.on('click', '.spc2-continue', function () {
+                var next = $(this).data('next');
+                if (next && $('#' + next).length) {
+                    openStep(next);
+                    $('html, body').animate({ scrollTop: $('#' + next).offset().top - 80 }, 200);
+                }
+            });
+
+            //multi-row address cards drive nop's (hidden) address <select>
+            $('.spc2-addr-cards').each(function () {
+                var $cards = $(this);
+                var $select = $($cards.data('target'));
+                if (!$select.length)
+                    return;
+
+                //reflect the select's current value onto the cards
+                var current = $select.val() || '0';
+                $cards.find('input[type="radio"][value="' + current + '"]').prop('checked', true)
+                    .closest('.spc2-addr-card').addClass('is-selected');
+
+                $cards.on('change', 'input[type="radio"]', function () {
+                    $cards.find('.spc2-addr-card').removeClass('is-selected');
+                    $(this).closest('.spc2-addr-card').addClass('is-selected');
+                    //set the value and run nop's onchange (resets/toggles the new-address form)
+                    $select.val($(this).val()).trigger('change');
+                });
+            });
+        }
+
         //containers updated as the server returns fresh section html
         var sectionContainers = {
             'shipping': '#checkout-shipping-load',
@@ -95,6 +141,8 @@
             var $ul = $messages.find('ul').empty();
             $.each(messages, function (i, m) { $ul.append($('<li/>').text(m)); });
             $messages.show();
+            //the failing field may be in a collapsed step - reveal them all (Layout 02)
+            $('.spc2-step').addClass('is-open');
             $('html, body').animate({ scrollTop: $messages.offset().top - 80 }, 200);
         }
 
@@ -191,6 +239,7 @@
             }
         }
 
+        initLayout02();
         initAddressForms();
         syncShipToSameAddress();
         $('#ShipToSameAddress').on('change', syncShipToSameAddress);

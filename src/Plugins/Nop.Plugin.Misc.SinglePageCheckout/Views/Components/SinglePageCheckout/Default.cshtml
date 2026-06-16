@@ -1,0 +1,145 @@
+@using Nop.Core
+@using Nop.Core.Http
+@using Nop.Plugin.Misc.SinglePageCheckout.Models
+@using Nop.Web.Components
+@using Nop.Web.Framework.Components
+@using Nop.Web.Framework.Infrastructure
+@using Nop.Web.Models.Checkout
+@using Nop.Web.Models.ShoppingCart
+@model SinglePageCheckoutModel
+@inject IWebHelper webHelper
+@{
+    var checkoutUrl = $"{webHelper.GetStoreLocation()}checkout/";
+    var completedUrl = Url.RouteUrl(NopRouteNames.Standard.CHECKOUT_COMPLETED);
+}
+
+<div class="spc"
+     data-checkout-url="@checkoutUrl"
+     data-completed-url="@completedUrl"
+     data-fail-msg="@T("Plugins.Misc.SinglePageCheckout.SectionFailed")"
+     data-shipping-required="@Model.ShippingRequired.ToString().ToLowerInvariant()"
+     data-payment-required="@Model.PaymentRequired.ToString().ToLowerInvariant()"
+     data-payment-info="@((Model.PaymentInfo != null).ToString().ToLowerInvariant())"
+     data-billing-newaddr-id="@(Model.OnePageCheckout.BillingAddress.BillingNewAddress.Id)">
+
+    <div id="spc-messages" class="message-error" style="display: none;">
+        <ul></ul>
+    </div>
+
+    <div class="spc-columns">
+
+        @* ---------- Column 1: addresses ---------- *@
+        <div class="spc-col spc-col-addresses">
+            <div class="spc-section" id="opc-billing">
+                <h2 class="spc-section-title">@T("Checkout.BillingAddress")</h2>
+                <form id="co-billing-form" action="" method="post">
+                    <div id="checkout-billing-load">
+                        @await Html.PartialAsync("~/Views/Checkout/OpcBillingAddress.cshtml", Model.OnePageCheckout.BillingAddress)
+                    </div>
+                </form>
+            </div>
+
+            @if (Model.ShippingRequired && Model.ShippingAddress != null)
+            {
+                <div class="spc-section" id="opc-shipping">
+                    <h2 class="spc-section-title">@T("Checkout.ShippingAddress")</h2>
+                    <form id="co-shipping-form" action="" method="post">
+                        <div id="checkout-shipping-load">
+                            @await Html.PartialAsync("~/Views/Checkout/OpcShippingAddress.cshtml", Model.ShippingAddress)
+                        </div>
+                    </form>
+                </div>
+            }
+
+            @if (Model.ShowEstimateShipping && Model.ShippingRequired)
+            {
+                <div class="spc-section" id="spc-estimate-shipping">
+                    <h2 class="spc-section-title">@T("ShoppingCart.EstimateShipping")</h2>
+                    @await Component.InvokeAsync(typeof(ShoppingCartEstimateShippingViewComponent))
+                </div>
+            }
+        </div>
+
+        @* ---------- Column 2: delivery + payment ---------- *@
+        <div class="spc-col spc-col-methods">
+            @if (Model.ShippingRequired && Model.ShippingMethod != null)
+            {
+                <div class="spc-section" id="spc-shipping-method">
+                    <h2 class="spc-section-title">@T("Checkout.ShippingMethod")</h2>
+                    <form id="co-shipping-method-form" action="" method="post">
+                        <div id="checkout-shipping-method-load">
+                            @await Html.PartialAsync("~/Views/Checkout/OpcShippingMethods.cshtml", Model.ShippingMethod)
+                        </div>
+                    </form>
+                </div>
+            }
+
+            @if (Model.PaymentRequired && Model.PaymentMethod != null)
+            {
+                <div class="spc-section" id="spc-payment-method">
+                    <h2 class="spc-section-title">@T("Checkout.PaymentMethod")</h2>
+                    <form id="co-payment-method-form" action="" method="post">
+                        <div id="checkout-payment-method-load">
+                            @await Html.PartialAsync("~/Views/Checkout/OpcPaymentMethods.cshtml", Model.PaymentMethod)
+                        </div>
+                    </form>
+                </div>
+            }
+
+            @if (Model.PaymentInfo != null)
+            {
+                <div class="spc-section" id="spc-payment-info">
+                    <h2 class="spc-section-title">@T("Checkout.PaymentInfo")</h2>
+                    <form id="co-payment-info-form" action="" method="post">
+                        <div id="checkout-payment-info-load">
+                            @await Html.PartialAsync("~/Views/Checkout/OpcPaymentInfo.cshtml", Model.PaymentInfo)
+                        </div>
+                    </form>
+                </div>
+            }
+
+            @if (Model.ShowCheckoutAttributes)
+            {
+                <div class="spc-section" id="spc-checkout-attributes">
+                    <h2 class="spc-section-title">@T("ShoppingCart.CheckoutAttributes")</h2>
+                    @await Html.PartialAsync("~/Views/Shared/_CheckoutAttributes.cshtml", Model.Cart)
+                    @await Component.InvokeAsync(typeof(SelectedCheckoutAttributesViewComponent))
+                </div>
+            }
+        </div>
+
+        @* ---------- Column 3: summary + place order ---------- *@
+        <div class="spc-col spc-col-summary">
+            <div class="spc-section" id="spc-order-summary">
+                <h2 class="spc-section-title">@T("Order.Product(s)")</h2>
+                @await Html.PartialAsync("~/Views/Shared/Components/OrderSummary/Default.cshtml", Model.Cart)
+            </div>
+
+            @if (Model.ShowDiscountBox && Model.Cart.DiscountBox != null)
+            {
+                <div class="spc-section spc-deals" id="spc-discount">
+                    @await Html.PartialAsync("~/Views/Shared/_DiscountBox.cshtml", Model.Cart.DiscountBox)
+                </div>
+            }
+
+            @if (Model.ShowGiftCardBox && Model.Cart.GiftCardBox != null)
+            {
+                <div class="spc-section spc-deals" id="spc-giftcard">
+                    @await Html.PartialAsync("~/Views/ShoppingCart/_GiftCardBox.cshtml", Model.Cart.GiftCardBox)
+                </div>
+            }
+
+            @* order totals are already rendered inside the order summary above *@
+
+            <div class="spc-place-order">
+                <button type="button" id="spc-place-order" class="button-1 confirm-order-next-step-button">
+                    @T("Plugins.Misc.SinglePageCheckout.PlaceOrder")
+                </button>
+                <span id="spc-please-wait" class="please-wait" style="display: none;">
+                    @T("Plugins.Misc.SinglePageCheckout.Submitting")
+                </span>
+            </div>
+        </div>
+
+    </div>
+</div>

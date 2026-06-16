@@ -1,0 +1,83 @@
+@model Nop.Plugin.Misc.SinglePageCheckout.Models.ConfigurationModel
+@{
+    Layout = "_ConfigurePlugin";
+}
+
+@await Component.InvokeAsync(typeof(StoreScopeConfigurationViewComponent))
+
+<form asp-controller="MiscSinglePageCheckout" asp-action="Configure" method="post">
+    <div class="cards-group">
+        <div class="card card-default">
+            <div class="card-body">
+                <p>
+                    @T("Plugins.Misc.SinglePageCheckout.Configuration")
+                </p>
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <nop-override-store-checkbox asp-for="Enabled_OverrideForStore" asp-input="Enabled" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
+                        <nop-label asp-for="Enabled" />
+                    </div>
+                    <div class="col-md-9">
+                        <nop-editor asp-for="Enabled" />
+                        <span asp-validation-for="Enabled"></span>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <nop-override-store-checkbox asp-for="LayoutTypeId_OverrideForStore" asp-input="LayoutTypeId" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
+                        <nop-label asp-for="LayoutTypeId" />
+                    </div>
+                    <div class="col-md-9">
+                        <nop-select asp-for="LayoutTypeId" asp-items="Model.AvailableLayouts" />
+                        <span asp-validation-for="LayoutTypeId"></span>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <nop-override-store-checkbox asp-for="ShowDiscountBox_OverrideForStore" asp-input="ShowDiscountBox" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
+                        <nop-label asp-for="ShowDiscountBox" />
+                    </div>
+                    <div class="col-md-9">
+                        <nop-editor asp-for="ShowDiscountBox" />
+                        <span asp-validation-for="ShowDiscountBox"></span>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <nop-override-store-checkbox asp-for="ShowGiftCardBox_OverrideForStore" asp-input="ShowGiftCardBox" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
+                        <nop-label asp-for="ShowGiftCardBox" />
+                    </div>
+                    <div class="col-md-9">
+                        <nop-editor asp-for="ShowGiftCardBox" />
+                        <span asp-validation-for="ShowGiftCardBox"></span>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <nop-override-store-checkbox asp-for="ShowCheckoutAttributes_OverrideForStore" asp-input="ShowCheckoutAttributes" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
+                        <nop-label asp-for="ShowCheckoutAttributes" />
+                    </div>
+                    <div class="col-md-9">
+                        <nop-editor asp-for="ShowCheckoutAttributes" />
+                        <span asp-validation-for="ShowCheckoutAttributes"></span>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <nop-override-store-checkbox asp-for="ShowEstimateShipping_OverrideForStore" asp-input="ShowEstimateShipping" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
+                        <nop-label asp-for="ShowEstimateShipping" />
+                    </div>
+                    <div class="col-md-9">
+                        <nop-editor asp-for="ShowEstimateShipping" />
+                        <span asp-validation-for="ShowEstimateShipping"></span>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-md-9 offset-md-3">
+                        <button type="submit" name="save" class="btn btn-primary">@T("Admin.Common.Save")</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
